@@ -493,10 +493,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source\SynthVoice.cpp">
-      <Filter>StringSynthPlugin\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source\Synth.cpp">
+    <ClCompile Include="..\..\Source\SynthPlugin.cpp">
       <Filter>StringSynthPlugin\Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\PluginProcessor.cpp">
@@ -2880,10 +2877,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source\SynthVoice.h">
-      <Filter>StringSynthPlugin\Source</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source\Synth.h">
+    <ClInclude Include="..\..\Source\SynthPlugin.h">
       <Filter>StringSynthPlugin\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\PluginProcessor.h">

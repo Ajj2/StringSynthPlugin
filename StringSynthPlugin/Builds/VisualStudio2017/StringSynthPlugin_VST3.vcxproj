@@ -107,7 +107,7 @@
       <AdditionalDependencies>StringSynthPlugin.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
     <PostBuildEvent>
-      <Command>copy /Y &quot;$(OutDir)$(TargetFileName)&quot; &quot;C:\Users\Alex\$(TargetFileName)&quot;</Command>
+      <Command>copy /Y &quot;$(OutDir)$(TargetFileName)&quot; &quot;C:\Users\Alex\VST3\$(TargetFileName)&quot;</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

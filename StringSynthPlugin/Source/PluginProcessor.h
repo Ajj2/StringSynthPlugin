@@ -11,11 +11,12 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "SynthPlugin.h"
 
 //==============================================================================
 /**
 */
-class StringSynthPluginAudioProcessor  : public AudioProcessor
+class StringSynthPluginAudioProcessor  : public AudioProcessor, public Timer
 {
 public:
     //==============================================================================
@@ -32,6 +33,7 @@ public:
 
     void processBlock (AudioBuffer<float>&, MidiBuffer&) override;
 
+	void timerCallback() override;
     //==============================================================================
     AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
@@ -56,7 +58,8 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
 private:
-	stk::ADSR adsr;
+
+	ScopedPointer<Synth> synth;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (StringSynthPluginAudioProcessor)
 };

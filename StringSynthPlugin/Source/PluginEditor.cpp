@@ -28,11 +28,11 @@ StringSynthPluginAudioProcessorEditor::~StringSynthPluginAudioProcessorEditor()
 void StringSynthPluginAudioProcessorEditor::paint (Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));
+    g.fillAll (Colours::darkgrey);
 
-    g.setColour (Colours::white);
-    g.setFont (15.0f);
-    g.drawFittedText ("Hello World!", getLocalBounds(), Justification::centred, 1);
+    g.setColour (Colours::hotpink);
+    g.setFont (10.0f);
+	g.drawFittedText ("String Synth", getLocalBounds(), Justification::topLeft, 1);
 }
 
 void StringSynthPluginAudioProcessorEditor::resized()
