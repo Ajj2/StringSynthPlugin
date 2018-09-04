@@ -56,6 +56,7 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
 private:
+	stk::ADSR adsr;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (StringSynthPluginAudioProcessor)
 };
