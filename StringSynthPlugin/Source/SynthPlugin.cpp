@@ -11,7 +11,7 @@
 #include "SynthPlugin.h"
 
 
-StringSynthVoice::StringSynthVoice() : silent(true)
+StringSynthVoice::StringSynthVoice() 
 {
 	for (int ch = 0; ch < 2; ch++)
 	{
@@ -22,6 +22,8 @@ StringSynthVoice::StringSynthVoice() : silent(true)
 	}
 	randy.setSeedRandomly();
 	tailOff = 0.0;
+	
+	state = inActive;
 }
 
 StringSynthVoice::~StringSynthVoice()
@@ -36,18 +38,20 @@ bool StringSynthVoice::canPlaySound(SynthesiserSound* ss)
 
 void StringSynthVoice::startNote(int midiNoteNumber, float velocity, SynthesiserSound* sound, int currentPitchWheelPosition)
 {
+	state = active_NotFading;
 	//synth->incActiveNotes();
-	silent = false;
-	for (int ch = 0; ch < 2; ch++)
-	{
-		envelope[ch].keyOn();
-	}
+	envelope[0].keyOn();
+	envelope[1].keyOn();
 }
 
 void StringSynthVoice::stopNote(float velocity, bool allowTailOff)
 {
 	//synth->decActiveNotes();
-	if (allowTailOff)
+	tailOff = 1.0;
+	state = active_Fading;
+	envelope[0].keyOff();
+	envelope[1].keyOff();
+	/*if (allowTailOff)
 	{
 		if (tailOff == 0.0)
 		{
@@ -57,13 +61,14 @@ void StringSynthVoice::stopNote(float velocity, bool allowTailOff)
 	else
 	{
 		clearCurrentNote();
-		silent = true;
+		state = inActive;
 	}
+	*/
 }
 
 bool StringSynthVoice::isVoiceActive() const
 {
-	if (envelope[0].getState() == stk::ADSR::IDLE)
+	if (state == inActive)
 	{
 		return false;
 	}
@@ -97,33 +102,37 @@ void StringSynthVoice::renderNextBlock(AudioBuffer<float>& outputBuffer, int sta
 {
 	int numOutChannels = outputBuffer.getNumChannels();
 
+	static int counter = 0;
+	counter++;
+
 	for (int ch = 0; ch < numOutChannels; ch++)
 	{
 		int numSamp = numSamples;
 		float* outP = outputBuffer.getWritePointer(ch);
 		while (numSamp--)
 		{
-			if (tailOff > 0)
+			if (state == active_Fading)
 			{
-				*outP = ((randy.nextFloat() * 2.0) - 1.0) * 0.2 * tailOff;
-
-				tailOff *= 0.99;
-
-				if (!silent && tailOff < 0.005)
+				tailOff *= 0.9999;
+				float out = ((randy.nextFloat() * 2.0) - 1.0) * 0.2 * tailOff;
+				*outP = out;
+				outP++;
+				if (tailOff < 0.005)
 				{
 					clearCurrentNote();
-					tailOff == 0.0;
-					silent = true;
+					tailOff = 0.0;
+					state = inActive;
 				}
 			}
-			else
+			else if (state == active_NotFading)
 			{
-				*outP = ((randy.nextFloat() * 2.0) - 1.0) * 0.2 * envelope[ch].tick();
+				float envValue = envelope[ch].tick();
+
+				*outP = ((randy.nextFloat() * 2.0) - 1.0) * 0.2;
 				outP++;
 			}
 		}
 	}
-
 	//if (envelope[0].getState() == stk::ADSR::IDLE) { silent = true; }
 }
 
@@ -134,7 +143,7 @@ void StringSynthVoice::renderNextBlock(AudioBuffer<double>& outputBuffer, int st
 
 void StringSynthVoice::setCurrentPlaybackSampleRate(double newRate)
 {
-
+	envelope->setSampleRate(newRate);
 }
 
 bool StringSynthVoice::isPlayingChannel(int midiChannel) const

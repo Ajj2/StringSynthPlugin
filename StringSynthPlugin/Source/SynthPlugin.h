@@ -27,6 +27,13 @@ private:
 class StringSynthVoice : public SynthesiserVoice
 {
 public:
+	enum State
+	{
+		inActive = 0,
+		active_Fading,
+		active_NotFading,
+		numStates
+	};
 	StringSynthVoice();
 	~StringSynthVoice();
 
@@ -56,11 +63,21 @@ public:
 
 private:
 	stk::ADSR envelope[2];
-	float tailOff;
 	Random randy;
-	bool silent;
+	float tailOff;
+	int state;
 	//Synth* synth;
 };
+
+//---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++//
+class Envelope : public stk::ADSR
+{
+public:
+
+private:
+	bool finished;
+};
+
 
 //---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++//
 

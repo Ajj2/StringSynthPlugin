@@ -18,6 +18,10 @@ StringSynthPluginAudioProcessorEditor::StringSynthPluginAudioProcessorEditor (St
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize (400, 300);
+
+	addAndMakeVisible(noteButton);
+	noteButton.addListener(this);
+	noteButton.setButtonText("NOTE ON/OFF");
 }
 
 StringSynthPluginAudioProcessorEditor::~StringSynthPluginAudioProcessorEditor()
@@ -37,6 +41,21 @@ void StringSynthPluginAudioProcessorEditor::paint (Graphics& g)
 
 void StringSynthPluginAudioProcessorEditor::resized()
 {
-    // This is generally where you'll want to lay out the positions of any
-    // subcomponents in your editor..
+	Rectangle<int> r = getLocalBounds();
+
+	noteButton.setBounds(r.reduced(20));
+}
+
+void StringSynthPluginAudioProcessorEditor::buttonClicked(Button* b)
+{
+	if (Switch)
+	{
+		processor.triggerNoteOn();
+		Switch = false;
+	}
+	else if (!Switch)
+	{
+		processor.triggerNoteOff();
+		Switch = true;
+	}
 }

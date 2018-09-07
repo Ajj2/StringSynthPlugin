@@ -14,6 +14,12 @@
       <FILE id="Boh7Kb" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
       <FILE id="KHauJn" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
+      <FILE id="IeZSFc" name="Loops.cpp" compile="1" resource="0" file="Source/Loops.cpp"/>
+      <FILE id="b34lgc" name="Loops.hpp" compile="0" resource="0" file="Source/Loops.hpp"/>
+      <FILE id="zuK2u5" name="Oscillator.cpp" compile="1" resource="0" file="Source/Oscillator.cpp"/>
+      <FILE id="luRpOB" name="Oscillator.h" compile="0" resource="0" file="Source/Oscillator.h"/>
+      <FILE id="AYKd6b" name="VarDelay.cpp" compile="1" resource="0" file="Source/VarDelay.cpp"/>
+      <FILE id="HSoHkY" name="VarDelay.h" compile="0" resource="0" file="Source/VarDelay.h"/>
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>

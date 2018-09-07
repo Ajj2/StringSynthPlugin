@@ -57,9 +57,16 @@ public:
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-private:
+	void triggerNoteOn();
+	void triggerNoteOff();
 
-	ScopedPointer<Synth> synth;
+private:
+	ScopedPointer<Synthesiser> synth;
+	int prevNote = -1;
+	bool noteStarted = false;
+	bool noteStopped = false;
+	//ScopedPointer<Synth> synth;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (StringSynthPluginAudioProcessor)
 };
+

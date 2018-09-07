@@ -502,6 +502,15 @@
     <ClCompile Include="..\..\Source\PluginEditor.cpp">
       <Filter>StringSynthPlugin\Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source\Loops.cpp">
+      <Filter>StringSynthPlugin\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Oscillator.cpp">
+      <Filter>StringSynthPlugin\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\VarDelay.cpp">
+      <Filter>StringSynthPlugin\Source</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\..\..\..\..\JUCE\modules\juce_audio_basics\buffers\juce_AudioChannelSet.cpp">
       <Filter>JUCE Modules\juce_audio_basics\buffers</Filter>
     </ClCompile>
@@ -2884,6 +2893,15 @@
       <Filter>StringSynthPlugin\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\PluginEditor.h">
+      <Filter>StringSynthPlugin\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Loops.hpp">
+      <Filter>StringSynthPlugin\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Oscillator.h">
+      <Filter>StringSynthPlugin\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\VarDelay.h">
       <Filter>StringSynthPlugin\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\..\..\..\JUCE\modules\juce_audio_basics\audio_play_head\juce_AudioPlayHead.h">

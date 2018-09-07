@@ -31,7 +31,7 @@
       </OUTPUTS>
     </LAYOUT>
   </FILTER>
-  <FILTER uid="3" x="0.47875000000000000888" y="0.9213709677419354982">
+  <FILTER uid="3" x="0.47749999999999998002" y="0.82258064516129036914">
     <PLUGIN name="Audio Output" descriptiveName="" format="Internal" category="I/O devices"
             manufacturer="ROLI Ltd." version="1.0" file="" uid="724248cb"
             isInstrument="0" fileTime="0" infoUpdateTime="0" numInputs="0"
@@ -43,20 +43,6 @@
       </INPUTS>
       <OUTPUTS>
         <BUS index="0" layout="disabled"/>
-      </OUTPUTS>
-    </LAYOUT>
-  </FILTER>
-  <FILTER uid="7" x="0.47625000000000000666" y="0.59475806451612900361"
-          uiLastX_Normal="82" uiLastY_Normal="323" uiopen_Normal="0">
-    <PLUGIN name="StringSynthPlugin" format="VST3" category="Instrument|Synth"
-            manufacturer="Ajj" version="1.0.0" file="C:\Users\Alex\VST3\StringSynthPlugin.vst3"
-            uid="6a48636f" isInstrument="1" fileTime="165a4f4df14" infoUpdateTime="165a4f612f5"
-            numInputs="0" numOutputs="2" isShell="0"/>
-    <STATE>388.VMjLgrW....OVMEUy.Ea0cVZtMEcgQWY9vSRC8Vav8lak4Fc9HyL13hUMczXWEjKt3hYt3hKt.kKt3hKt3BS5gEcyQjKt3hKvXTR5AkaA4hKtfjYVEyZGkkKD4hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKtX2Pt3hKt3hKt3hKt3FUUMTUDQEdqw1XmE0UYQTQFM1YAAkKAgDUjYWQwHVdAAkKAwjKtLlKt3hKt3hKt3hYRUUSTEETIckVwTjQisVTTgkdEYDOujzPu0Fbu4VYtQmO77hUSQ0LPwVcmklaSQWXzUlO..</STATE>
-    <LAYOUT>
-      <INPUTS/>
-      <OUTPUTS>
-        <BUS index="0" layout="L R"/>
       </OUTPUTS>
     </LAYOUT>
   </FILTER>

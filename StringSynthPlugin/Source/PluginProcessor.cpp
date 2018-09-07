@@ -24,13 +24,11 @@ StringSynthPluginAudioProcessor::StringSynthPluginAudioProcessor()
                        )
 #endif
 {
-	synth = new Synth();
-
-	for (int v = 0; v < 32; v++)
-	{
-		synth->addVoice(new StringSynthVoice());
-	}
-	startTimerHz(2);
+	synth = new Synthesiser();
+	synth->clearVoices();
+	synth->clearSounds();
+	synth->addSound(new StringSynthSound());
+	//startTimerHz(2);
 }
 
 StringSynthPluginAudioProcessor::~StringSynthPluginAudioProcessor()
@@ -39,8 +37,51 @@ StringSynthPluginAudioProcessor::~StringSynthPluginAudioProcessor()
 
 void StringSynthPluginAudioProcessor::timerCallback()
 {
+	/*static int noteInc = 59;
 
+	synth->noteOn(1, ++noteInc, 0.5);
+
+	if (prevNote != -1)
+	{
+		synth->noteOff(1, prevNote, 0, true);
+	}
+
+	prevNote = noteInc;*/
+
+	if (noteStarted == false)
+	{
+		synth->noteOn(1, 60, 1);
+		noteStarted = true;
+		DBG("1");
+	}
+
+	static int counter = 0;
+	counter++;
+	
+	if (counter == 10)
+	{
+		DBG("2");
+		if (noteStarted == true && noteStopped == false)
+		{
+			DBG("3");
+			synth->noteOff(1, 60, 1, true);
+			noteStopped = true;
+		}
+	}
 }
+
+void StringSynthPluginAudioProcessor::triggerNoteOn()
+{
+	DBG("ON");
+	synth->noteOn(1, 60, 1);
+}
+
+void StringSynthPluginAudioProcessor::triggerNoteOff()
+{
+	DBG("OFF");
+	synth->noteOff(1, 60, 1, true);
+}
+
 
 //==============================================================================
 const String StringSynthPluginAudioProcessor::getName() const
@@ -109,6 +150,11 @@ void StringSynthPluginAudioProcessor::prepareToPlay (double sampleRate, int samp
 {
 	synth->setCurrentPlaybackSampleRate(sampleRate);
 	synth->setNoteStealingEnabled(true);
+
+	for (int v = 0; v < 32; v++)
+	{
+		synth->addVoice(new StringSynthVoice());
+	}
 }
 
 void StringSynthPluginAudioProcessor::releaseResources()
@@ -152,11 +198,8 @@ void StringSynthPluginAudioProcessor::processBlock (AudioBuffer<float>& buffer, 
 
     for (int channel = 0; channel < totalNumOutputChannels; ++channel)
     {
-        auto* channelData = buffer.getWritePointer (channel);
-
-
+		auto* channelData = buffer.getWritePointer(channel);
     }
-	
 	synth->renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 }
 
