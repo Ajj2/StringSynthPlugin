@@ -12,47 +12,48 @@
 
 using namespace juce;
 
-Oscillator::Oscillator()
+OscillatorLoc::OscillatorLoc()
 {
     reset();
 }
 
-Oscillator::~Oscillator()
+OscillatorLoc::~OscillatorLoc()
 {
     
 }
 
-void Oscillator::setFrequency (float freq)
+void OscillatorLoc::setFrequency (float freq)
 {
     frequency = freq;
     phaseInc = (2 * M_PI * frequency ) / sampleRate ;
 }
 
-void Oscillator::setNote (int noteNum)
+void OscillatorLoc::setNote (int noteNum)
 {
     setFrequency (440.f * pow (2, (noteNum - 69) / 12.0));
 }
 
-void Oscillator::setAmplitude (float amp)
+void OscillatorLoc::setAmplitude (float amp)
 {
     amplitude = amp;
 }
 
-void Oscillator::reset()
+void OscillatorLoc::reset()
 {
     phase = 0.f;
 }
 
-void Oscillator::setSampleRate (float sr)
+void OscillatorLoc::setSampleRate (float sr)
 {
     sampleRate = sr;
     setFrequency (frequency );//just to update the phaseInc
 }
 
-float Oscillator::nextSample()
+float OscillatorLoc::nextSample()
 {
     float out = renderWaveShape (phase ) * amplitude ;
-    phase = phase + phaseInc ;
+    //phase = phase + phaseInc ;
+	phase += phaseInc;
     if(phase  > (2.f * M_PI))
         phase -= (2.f * M_PI);
     

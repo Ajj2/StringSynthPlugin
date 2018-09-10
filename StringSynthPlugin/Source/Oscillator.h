@@ -16,19 +16,19 @@
 
 # define M_PI           3.14159265358979323846  /* pi */
 
-class Oscillator
+class OscillatorLoc
 {
 public:
     //==============================================================================
     /**
      SinOscillator constructor
      */
-    Oscillator();
+	OscillatorLoc();
     
     /**
      SinOscillator destructor
      */
-    virtual ~Oscillator();
+    virtual ~OscillatorLoc();
     
     /**
      sets the frequency of the oscillator

@@ -12,11 +12,12 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "SynthPlugin.h"
+#include "Identifiers.h"
 
 //==============================================================================
 /**
 */
-class StringSynthPluginAudioProcessor  : public AudioProcessor, public Timer
+class StringSynthPluginAudioProcessor  : public AudioProcessor
 {
 public:
     //==============================================================================
@@ -33,7 +34,6 @@ public:
 
     void processBlock (AudioBuffer<float>&, MidiBuffer&) override;
 
-	void timerCallback() override;
     //==============================================================================
     AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
@@ -60,11 +60,19 @@ public:
 	void triggerNoteOn();
 	void triggerNoteOff();
 
+	void updateSynthVoiceFreq(int index, float freq);
+
 private:
-	ScopedPointer<Synthesiser> synth;
+	AudioProcessorValueTreeState parameters;
+
+	ScopedPointer<Synth> synth;
 	int prevNote = -1;
 	bool noteStarted = false;
 	bool noteStopped = false;
+
+	int index = 0;
+	const int numNotes = 10;
+	int notes[10] = {60, 61 , 62, 63, 64, 65, 66, 67, 68, 69};
 	//ScopedPointer<Synth> synth;
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (StringSynthPluginAudioProcessor)

@@ -24,7 +24,7 @@
 //==============================================================================
 
 /** A sine wave oscillator class. */
-class SinOsc : public Oscillator
+class SinOsc : public OscillatorLoc
 {
 public:
     /** SinOsc Constructor.*/
@@ -43,7 +43,7 @@ private:
 };
 
 /** A Triangle wave oscillator class.*/
-class TriangleOsc : public Oscillator
+class TriangleOsc : public OscillatorLoc
 {
 public:
     /**TriangleOsc Constructor.*/
@@ -68,7 +68,7 @@ private:
 };
 
 /** A square wave oscillator class.*/
-class SquareOsc : public Oscillator
+class SquareOsc : public OscillatorLoc
 {
 public:
     /**SquareOsc Constructor.*/
@@ -258,7 +258,7 @@ private:
     juce::AudioSampleBuffer sampleBuffer[2];
     juce::AudioBuffer<float> scratchBuffer[2];
     
-    Oscillator* modOsc[2];
+    OscillatorLoc* modOsc[2];
     TriangleOsc triOsc[2];
     SquareOsc sqrOsc[2];
     SinOsc sinOsc[2];

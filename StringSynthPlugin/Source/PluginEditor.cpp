@@ -19,9 +19,18 @@ StringSynthPluginAudioProcessorEditor::StringSynthPluginAudioProcessorEditor (St
     // editor's size to whatever you need it to be.
     setSize (400, 300);
 
-	addAndMakeVisible(noteButton);
-	noteButton.addListener(this);
-	noteButton.setButtonText("NOTE ON/OFF");
+	addAndMakeVisible(noteOnButton);
+	noteOnButton.addListener(this);
+	noteOnButton.setButtonText("Add Note");
+
+	addAndMakeVisible(noteOffButton);
+	noteOffButton.addListener(this);
+	noteOffButton.setButtonText("Dec Note");
+
+	addAndMakeVisible(freq1Slider);
+	freq1Slider.setRange(100, 1000);
+	freq1Slider.setSliderStyle(Slider::LinearVertical);
+	freq1Slider.addListener(this);
 }
 
 StringSynthPluginAudioProcessorEditor::~StringSynthPluginAudioProcessorEditor()
@@ -42,20 +51,29 @@ void StringSynthPluginAudioProcessorEditor::paint (Graphics& g)
 void StringSynthPluginAudioProcessorEditor::resized()
 {
 	Rectangle<int> r = getLocalBounds();
+	Rectangle<int> sliderBounds = r.removeFromLeft(r.getWidth()*0.2);
 
-	noteButton.setBounds(r.reduced(20));
+	freq1Slider.setBounds(sliderBounds);
+	noteOnButton.setBounds(r.removeFromLeft((float)r.getWidth()*0.5));
+	noteOffButton.setBounds(r);
 }
 
 void StringSynthPluginAudioProcessorEditor::buttonClicked(Button* b)
 {
-	if (Switch)
+	if (b == &noteOnButton)
 	{
 		processor.triggerNoteOn();
-		Switch = false;
 	}
-	else if (!Switch)
+	else if (b == &noteOffButton)
 	{
 		processor.triggerNoteOff();
-		Switch = true;
+	}
+}
+
+void StringSynthPluginAudioProcessorEditor::sliderValueChanged(Slider* slider)
+{
+	if (slider == &freq1Slider)
+	{
+		processor.updateSynthVoiceFreq(0, slider->getValue());
 	}
 }

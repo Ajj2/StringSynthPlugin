@@ -16,7 +16,7 @@
 //==============================================================================
 /**
 */
-class StringSynthPluginAudioProcessorEditor  : public AudioProcessorEditor, public Button::Listener
+class StringSynthPluginAudioProcessorEditor  : public AudioProcessorEditor, public Button::Listener, Slider::Listener
 {
 public:
     StringSynthPluginAudioProcessorEditor (StringSynthPluginAudioProcessor&);
@@ -27,14 +27,17 @@ public:
     void resized() override;
 
 	void buttonClicked(Button* b) override;
-
+	void sliderValueChanged(Slider* slider) override;
 
 private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     StringSynthPluginAudioProcessor& processor;
 
-	TextButton noteButton;
+	TextButton noteOnButton;
+	TextButton noteOffButton;
+
+	Slider freq1Slider;
 	bool Switch = false;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (StringSynthPluginAudioProcessorEditor)
 };

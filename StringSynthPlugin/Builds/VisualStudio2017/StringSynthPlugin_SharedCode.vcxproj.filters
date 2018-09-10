@@ -2886,6 +2886,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\Identifiers.h">
+      <Filter>StringSynthPlugin\Source</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\SynthPlugin.h">
       <Filter>StringSynthPlugin\Source</Filter>
     </ClInclude>

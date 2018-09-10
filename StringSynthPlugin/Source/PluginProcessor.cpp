@@ -21,65 +21,73 @@ StringSynthPluginAudioProcessor::StringSynthPluginAudioProcessor()
                       #endif
                        .withOutput ("Output", AudioChannelSet::stereo(), true)
                      #endif
-                       )
+                       ), parameters(*this, nullptr)
 #endif
 {
-	synth = new Synthesiser();
+	parameters.createAndAddParameter(ID1Amp, ID1Amp, ID1Amp, NormalisableRange<float>(0.0f, 1.0f), 0, nullptr, nullptr);
+	parameters.createAndAddParameter(ID1Freq, ID1Freq, ID1Freq, NormalisableRange<float>(0.0f, 1.0f), 0, nullptr, nullptr);
+	
+	parameters.state = ValueTree(Identifier("Processor Parameters"));
+
+	synth = new Synth();
 	synth->clearVoices();
 	synth->clearSounds();
 	synth->addSound(new StringSynthSound());
-	//startTimerHz(2);
 }
 
 StringSynthPluginAudioProcessor::~StringSynthPluginAudioProcessor()
 {
 }
 
-void StringSynthPluginAudioProcessor::timerCallback()
-{
-	/*static int noteInc = 59;
-
-	synth->noteOn(1, ++noteInc, 0.5);
-
-	if (prevNote != -1)
-	{
-		synth->noteOff(1, prevNote, 0, true);
-	}
-
-	prevNote = noteInc;*/
-
-	if (noteStarted == false)
-	{
-		synth->noteOn(1, 60, 1);
-		noteStarted = true;
-		DBG("1");
-	}
-
-	static int counter = 0;
-	counter++;
-	
-	if (counter == 10)
-	{
-		DBG("2");
-		if (noteStarted == true && noteStopped == false)
-		{
-			DBG("3");
-			synth->noteOff(1, 60, 1, true);
-			noteStopped = true;
-		}
-	}
-}
-
 void StringSynthPluginAudioProcessor::triggerNoteOn()
 {
-	DBG("ON");
-	synth->noteOn(1, 60, 1);
+	DBG("INDEX. 1: " << index);
+	synth->noteOn(1, notes[index], 1);
+
+	index++;
+
+	if (index > numNotes - 1)
+	{
+		index = (numNotes - 1);
+	}
+
+	DBG("getNumActiveNotes: " << synth->getNumActiveNotes());
+
+	for (int i = 0; i < synth->getNumActiveNotes(); i++)
+	{
+		StringSynthVoice* test = reinterpret_cast<StringSynthVoice*> (synth->getVoice(i));
+		int id = test->getNoteNum();
+		DBG(i << " : " << (String)id);
+	}
 }
 
 void StringSynthPluginAudioProcessor::triggerNoteOff()
 {
-	DBG("OFF");
-	synth->noteOff(1, 60, 1, true);
+	index--;
+
+	if (index < 0)
+	{
+		index = 0;
+	}
+
+	DBG("INDEX. 2: " << index);
+
+	if (index >= 0)
+	{
+		synth->noteOff(1, notes[index], 0, true);
+	}
+
+	Time::waitForMillisecondCounter(Time::getMillisecondCounter() + 100);
+
+	DBG("getNumActiveNotes: " << synth->getNumActiveNotes());
+
+	for (int i = 0; i < synth->getNumActiveNotes(); i++)
+	{
+		StringSynthVoice* voice = reinterpret_cast<StringSynthVoice*> (synth->getVoice(i));
+		int id = voice->getNoteNum();
+		float co = voice->getCutoff();
+		DBG(i << " : " << (String)id << " --> " << (String)co);
+	}
 }
 
 
@@ -153,7 +161,9 @@ void StringSynthPluginAudioProcessor::prepareToPlay (double sampleRate, int samp
 
 	for (int v = 0; v < 32; v++)
 	{
-		synth->addVoice(new StringSynthVoice());
+		StringSynthVoice* aVoice;
+		synth->addVoice(aVoice = new StringSynthVoice(v));
+		aVoice->setSynthesiser(synth);
 	}
 }
 
@@ -200,6 +210,11 @@ void StringSynthPluginAudioProcessor::processBlock (AudioBuffer<float>& buffer, 
     {
 		auto* channelData = buffer.getWritePointer(channel);
     }
+
+	float freq1 = *parameters.getRawParameterValue(ID1Freq);
+
+	synth->updateVoiceFreq(1, freq1);
+
 	synth->renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 }
 
@@ -228,6 +243,10 @@ void StringSynthPluginAudioProcessor::setStateInformation (const void* data, int
     // whose contents will have been created by the getStateInformation() call.
 }
 
+void StringSynthPluginAudioProcessor::updateSynthVoiceFreq(int index, float freq)
+{
+	synth->updateVoiceFreq(index, freq);
+}
 //==============================================================================
 // This creates new instances of the plugin..
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()

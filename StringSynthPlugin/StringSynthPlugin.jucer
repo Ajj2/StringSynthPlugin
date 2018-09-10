@@ -5,6 +5,7 @@
               pluginCharacteristicsValue="pluginIsSynth" pluginManufacturer="Ajj">
   <MAINGROUP id="Eu1AQa" name="StringSynthPlugin">
     <GROUP id="{24C1102B-996B-60EF-4E0E-C9364F2BB511}" name="Source">
+      <FILE id="L2I2vX" name="Identifiers.h" compile="0" resource="0" file="Source/Identifiers.h"/>
       <FILE id="WFXutd" name="SynthPlugin.cpp" compile="1" resource="0" file="Source/SynthPlugin.cpp"/>
       <FILE id="iWzZAl" name="SynthPlugin.h" compile="0" resource="0" file="Source/SynthPlugin.h"/>
       <FILE id="qG2kUe" name="PluginProcessor.cpp" compile="1" resource="0"
