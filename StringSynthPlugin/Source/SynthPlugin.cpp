@@ -25,6 +25,17 @@ StringSynthVoice::StringSynthVoice(int ID_) : ID(ID_)
 	
 	//sinOsc.reset();
 	state = inActive;
+
+	vardle = new VarDelay(ID);
+
+	vardle->setParameter(VarDelay::feedbackP, 0.6);
+	vardle->setParameter(VarDelay::freqP, 15);
+	vardle->setParameter(VarDelay::freqDistP, 0.2);
+	vardle->setParameter(VarDelay::mixP, 0.5);
+	vardle->setParameter(VarDelay::modSpeedP, 0);
+	vardle->setParameter(VarDelay::modDepthP, 0);
+	vardle->setParameter(VarDelay::harmonicityP, 1);
+	vardle->setParameter(VarDelay::freqRoundP, 1);
 }
 
 StringSynthVoice::~StringSynthVoice()
@@ -39,7 +50,6 @@ bool StringSynthVoice::canPlaySound(SynthesiserSound* ss)
 
 void StringSynthVoice::startNote(int midiNoteNumber, float velocity, SynthesiserSound* sound, int currentPitchWheelPosition)
 {
-	DBG("\nON = " << midiNoteNumber << " - " << ID);
 	bool updateFilter = true;
 
 	if (note == midiNoteNumber)
@@ -70,30 +80,10 @@ void StringSynthVoice::startNote(int midiNoteNumber, float velocity, Synthesiser
 
 void StringSynthVoice::stopNote(float velocity, bool allowTailOff)
 {
-	DBG("\nOFF = " << ID);
 	tailOff = 1.0;
 	state = active_Fading;
 	envelope[0].keyOff();
 	envelope[1].keyOff();
-
-	for (int i = 0; i < 2; i++)
-	{
-		bpf[i].reset();
-	//	sinOsc[i].reset();
-	}
-	/*if (allowTailOff)
-	{
-		if (tailOff == 0.0)
-		{
-			tailOff = 1.0;
-		}
-	}
-	else
-	{
-		clearCurrentNote();
-		state = inActive;
-	}
-	*/
 }
 
 bool StringSynthVoice::isVoiceActive() const
@@ -150,12 +140,6 @@ void StringSynthVoice::renderNextBlock(AudioBuffer<float>& outputBuffer, int sta
 				float out = std::sinf(phasePos[ch]) * 0.2 * envelope[ch].tick();
 				*outP += out;
 				outP++;
-
-				count++;
-				if ((count % 10000) == 0 && ch == 0 && ID == 0)
-				{
-					DBG("state: " << state);
-				}
 				if (envelope[ch].getState() == Envelope::IDLE)
 				{
 					parentSynth->decActiveNotes();
@@ -169,12 +153,6 @@ void StringSynthVoice::renderNextBlock(AudioBuffer<float>& outputBuffer, int sta
 				float envValue = envelope[ch].tick();
 				int state = envelope[ch].getState();
 
-				count++;
-				if ((count % 10000) == 0 && ch == 0 && ID == 0)
-				{
-					DBG("state: " << state);
-				}
-
 				phasePos[ch] += phaseInc;
 				if (phasePos[ch] >= twoPi)
 				{
@@ -187,7 +165,8 @@ void StringSynthVoice::renderNextBlock(AudioBuffer<float>& outputBuffer, int sta
 		}
 		//bpf[ch].processSamples(outputBuffer.getWritePointer(ch), numSamples);
 	}
-	//if (envelope[0].getState() == stk::ADSR::IDLE) { silent = true; }
+
+	vardle->getNextAudioBlock(AudioSourceChannelInfo(outputBuffer));
 }
 
 void StringSynthVoice::renderNextBlock(AudioBuffer<double>& outputBuffer, int startSample, int numSamples)
@@ -210,6 +189,11 @@ void StringSynthVoice::updateFreq(float newFreq)
 	phaseInc = (2 * M_PI * newFreq) / parentSynth->getSampleRate();
 	phasePos[0] = 0;
 	phasePos[1] = 0;
+}
+
+void StringSynthVoice::prepare(int samplesPerBlockExpected, double sampleRate)
+{
+	vardle->prepareToPlay(samplesPerBlockExpected, sampleRate);
 }
 
 //---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++//

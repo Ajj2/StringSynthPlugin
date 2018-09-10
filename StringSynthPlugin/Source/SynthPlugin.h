@@ -117,6 +117,8 @@ public:
 	float getCutoff() { return cutoff; }
 
 	void updateFreq( float newFreq );
+
+	void prepare(int samplesPerBlockExpected, double sampleRate);
 private:
 	int ID;
 	int note = 0;
@@ -125,6 +127,8 @@ private:
 	float tailOff;
 	int state;
 	Synth* parentSynth;
+
+	ScopedPointer<VarDelay> vardle;
 
 	float cutoff;
 	//IIRCoefficients coeff[2];

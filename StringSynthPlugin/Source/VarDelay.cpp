@@ -308,7 +308,7 @@ void VarDelay::getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFi
              write(bufferWritePos[ch], *inP + (reconstructedSignal * feedbackLocal), ch, 0);
              write(bufferWritePos[ch], *inP + (reconstructedSignal * feedbackLocal), ch, 1);
             
-            *outP = ( (reconstructedSignal * mix.get()) + (*inP * (1.0f - mix.get() ) ) ) * outGainSmooth.getNextValue();
+            *outP += ( (reconstructedSignal * mix.get()) + (*inP * (1.0f - mix.get() ) ) ) * outGainSmooth.getNextValue();
             
             inP++;
             outP++;

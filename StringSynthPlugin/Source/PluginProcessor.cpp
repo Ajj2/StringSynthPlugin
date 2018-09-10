@@ -164,6 +164,7 @@ void StringSynthPluginAudioProcessor::prepareToPlay (double sampleRate, int samp
 		StringSynthVoice* aVoice;
 		synth->addVoice(aVoice = new StringSynthVoice(v));
 		aVoice->setSynthesiser(synth);
+		aVoice->prepare(samplesPerBlock, sampleRate);
 	}
 }
 
