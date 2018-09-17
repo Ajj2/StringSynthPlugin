@@ -57,23 +57,30 @@ public:
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-	void triggerNoteOn();
-	void triggerNoteOff();
-
 	void updateSynthVoiceFreq(int index, float freq);
+
+	/*void timerCallback() override;*/
 
 private:
 	AudioProcessorValueTreeState parameters;
 
 	ScopedPointer<Synth> synth;
 	int prevNote = -1;
-	bool noteStarted = false;
-	bool noteStopped = false;
+	bool voiceAdded = false;
 
-	int index = 0;
-	const int numNotes = 10;
-	int notes[10] = {60, 61 , 62, 63, 64, 65, 66, 67, 68, 69};
-	//ScopedPointer<Synth> synth;
+	HashMap<int, String> idMapFreq;
+	HashMap<int, String> idMapFdbk;
+	HashMap<int, String> idMapTrig;
+
+	float fundamentalFreq = 65.41f; // C2
+
+	const static int numMultipliers = 20; 
+	float harmonicMultipliers[numMultipliers];
+
+	const static int numVoices = 8;
+
+	float prevTrigger[numVoices] = { 0 };
+
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (StringSynthPluginAudioProcessor)
 };

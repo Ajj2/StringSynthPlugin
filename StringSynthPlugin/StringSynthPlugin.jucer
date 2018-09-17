@@ -29,7 +29,7 @@
         <CONFIGURATION isDebug="1" name="Debug" enablePluginBinaryCopyStep="1" vst3BinaryLocation="C:\Users\Alex\VST3"
                        unityPluginBinaryLocation="C:\Users\Alex\Documents\iSci\nsb\nsb-bismuth-research-vr\Assets\Plugins\Audio\x86_64"/>
         <CONFIGURATION isDebug="0" name="Release" enablePluginBinaryCopyStep="1" vst3BinaryLocation="C:\Users\Alex\VST3"
-                       unityPluginBinaryLocation="C:\Users\Alex\Documents\iSci\nsb\nsb-bismuth-research-vr\Assets\Plugins\Audio"/>
+                       unityPluginBinaryLocation="C:\Users\Alex\Documents\iSci\nsb\nsb-bismuth-research-vr\Assets\Plugins\Audio\x86_64"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_audio_basics" path="../../../../../JUCE/modules"/>

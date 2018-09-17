@@ -24,72 +24,93 @@ StringSynthPluginAudioProcessor::StringSynthPluginAudioProcessor()
                        ), parameters(*this, nullptr)
 #endif
 {
-	parameters.createAndAddParameter(ID1Amp, ID1Amp, ID1Amp, NormalisableRange<float>(0.0f, 1.0f), 0, nullptr, nullptr);
-	parameters.createAndAddParameter(ID1Freq, ID1Freq, ID1Freq, NormalisableRange<float>(0.0f, 1.0f), 0, nullptr, nullptr);
-	
+
+	for (int v = 1; v <= 8; v++)
+	{
+		String tempFreqID = (String)v << "Freq";
+		String tempFdbkID = (String)v << "Fbdk";
+		String tempTrigID = (String)v << "Trigger";
+
+		idMapFdbk.set(v-1, tempFdbkID);
+		idMapFreq.set(v-1, tempFreqID);
+		idMapTrig.set(v-1, tempTrigID);
+
+		parameters.createAndAddParameter(tempFdbkID, tempFdbkID, tempFdbkID, NormalisableRange<float>(0.0f, 1.0f), 0.9, nullptr, nullptr);
+
+		parameters.createAndAddParameter(tempFreqID, tempFreqID, tempFreqID,
+			NormalisableRange<float>(0.0f, 1.0f), 0,
+			[](float value)
+		{
+			value = (value * 19.f) + 1.0f;
+			return String(value, 3);
+		},
+			[](const String& text)
+		{
+			return ((text.getFloatValue() - 1.0f) / 19.0f);
+		});
+
+		parameters.createAndAddParameter(tempTrigID, tempTrigID, tempTrigID, NormalisableRange<float>(0.0f, 1.0f), 0, nullptr, nullptr);
+	}
 	parameters.state = ValueTree(Identifier("Processor Parameters"));
 
 	synth = new Synth();
 	synth->clearVoices();
 	synth->clearSounds();
 	synth->addSound(new StringSynthSound());
+
+	if (!voiceAdded)
+	{
+		for (int v = 0; v < numVoices; v++)
+		{
+			StringSynthVoice* aVoice;
+			synth->addVoice(aVoice = new StringSynthVoice(v));
+			aVoice->setSynthesiser(synth);
+		}
+		voiceAdded = true;
+	}
+
+	for (int i = 0; i < numMultipliers; i++)
+	{
+		harmonicMultipliers[i] = (float)i + 1;
+	}
+
+	//startTimer(1500);
 }
 
 StringSynthPluginAudioProcessor::~StringSynthPluginAudioProcessor()
 {
 }
 
-void StringSynthPluginAudioProcessor::triggerNoteOn()
-{
-	DBG("INDEX. 1: " << index);
-	synth->noteOn(1, notes[index], 1);
-
-	index++;
-
-	if (index > numNotes - 1)
-	{
-		index = (numNotes - 1);
-	}
-
-	DBG("getNumActiveNotes: " << synth->getNumActiveNotes());
-
-	for (int i = 0; i < synth->getNumActiveNotes(); i++)
-	{
-		StringSynthVoice* test = reinterpret_cast<StringSynthVoice*> (synth->getVoice(i));
-		int id = test->getNoteNum();
-		DBG(i << " : " << (String)id);
-	}
-}
-
-void StringSynthPluginAudioProcessor::triggerNoteOff()
-{
-	index--;
-
-	if (index < 0)
-	{
-		index = 0;
-	}
-
-	DBG("INDEX. 2: " << index);
-
-	if (index >= 0)
-	{
-		synth->noteOff(1, notes[index], 0, true);
-	}
-
-	Time::waitForMillisecondCounter(Time::getMillisecondCounter() + 100);
-
-	DBG("getNumActiveNotes: " << synth->getNumActiveNotes());
-
-	for (int i = 0; i < synth->getNumActiveNotes(); i++)
-	{
-		StringSynthVoice* voice = reinterpret_cast<StringSynthVoice*> (synth->getVoice(i));
-		int id = voice->getNoteNum();
-		float co = voice->getCutoff();
-		DBG(i << " : " << (String)id << " --> " << (String)co);
-	}
-}
-
+//void StringSynthPluginAudioProcessor::timerCallback()
+//{
+//	Random randy;
+//	randy.setSeedRandomly();
+//
+//	int aRandomNumberOfVoices = randy.nextFloat() * 7.0f;
+//
+//	static int counter = 0;
+//
+//	
+//	for (int i = 0; i < aRandomNumberOfVoices; i++)
+//	{
+//		if (counter++ >= 7)
+//		{
+//			counter = 0;
+//		}
+//
+//		float harmmultindex = randy.nextFloat() * 19.0f;
+//		float harmfreq = harmonicMultipliers[(int)harmmultindex] * fundamentalFreq;
+//	
+//	    int wait = (randy.nextFloat() * 200.0f) + 100.0f;
+//
+//		Time::waitForMillisecondCounter(Time::getMillisecondCounter() + wait);
+//
+//		synth->updateVoiceFdbk(counter, 0.999);
+//		synth->noteOnForVoice(counter, harmfreq);
+//	}
+//
+//	startTimerHz((randy.nextFloat() * 2.0) + 1.0);
+//}
 
 //==============================================================================
 const String StringSynthPluginAudioProcessor::getName() const
@@ -157,21 +178,18 @@ void StringSynthPluginAudioProcessor::changeProgramName (int index, const String
 void StringSynthPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
 	synth->setCurrentPlaybackSampleRate(sampleRate);
-	synth->setNoteStealingEnabled(true);
+	synth->setNoteStealingEnabled(false);
 
-	for (int v = 0; v < 32; v++)
+	for (int v = 0 ; v < synth->getNumVoices(); v++)
 	{
-		StringSynthVoice* aVoice;
-		synth->addVoice(aVoice = new StringSynthVoice(v));
-		aVoice->setSynthesiser(synth);
-		aVoice->prepare(samplesPerBlock, sampleRate);
+		StringSynthVoice* voice = reinterpret_cast<StringSynthVoice*> (synth->getVoice(v));
+		voice->prepare(samplesPerBlock, sampleRate);
 	}
 }
 
 void StringSynthPluginAudioProcessor::releaseResources()
 {
-    // When playback stops, you can use this as an opportunity to free up any
-    // spare memory, etc.
+	synth->audioOff();
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -207,14 +225,28 @@ void StringSynthPluginAudioProcessor::processBlock (AudioBuffer<float>& buffer, 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    for (int channel = 0; channel < totalNumOutputChannels; ++channel)
-    {
-		auto* channelData = buffer.getWritePointer(channel);
-    }
+	//(String)v << "Fbdk";
+	float fdbk = *parameters.getRawParameterValue(idMapFdbk[0]);
 
-	float freq1 = *parameters.getRawParameterValue(ID1Freq);
+	float freqs[numVoices] = {1};
+	float triggers[numVoices] = { 0 };
 
-	synth->updateVoiceFreq(1, freq1);
+	for (int i = 0; i < numVoices; i++)
+	{
+		//freqs[i] = (*parameters.getRawParameterValue(idMapFreq[i+1]) * 499.f) + 1.f;
+		float harmMultIndex = (*parameters.getRawParameterValue(idMapFreq[i]) * 19.0f);
+		float harmFreq = harmonicMultipliers[(int)harmMultIndex] * fundamentalFreq;
+
+		triggers[i] = *parameters.getRawParameterValue(idMapTrig[i]);
+		
+		synth->updateVoiceFdbk(i, fdbk);
+
+		if (prevTrigger[i] == 0 && triggers[i] != 0)
+		{
+			synth->noteOnForVoice(i, harmFreq);
+		}
+		prevTrigger[i] = triggers[i];
+	}
 
 	synth->renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 }
@@ -222,7 +254,7 @@ void StringSynthPluginAudioProcessor::processBlock (AudioBuffer<float>& buffer, 
 //==============================================================================
 bool StringSynthPluginAudioProcessor::hasEditor() const
 {
-    return true; // (change this to false if you choose to not supply an editor)
+    return false; // (change this to false if you choose to not supply an editor)
 }
 
 AudioProcessorEditor* StringSynthPluginAudioProcessor::createEditor()

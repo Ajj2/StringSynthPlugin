@@ -110,8 +110,8 @@ void VarDelay::prepareToPlay (int samplesPerBlockExpected, double sampleRate)
     modValues[1][1].reset(sR, 0.5);
     
     emphasisSmooth.reset(sR, 0.5);
-    freqSmooth.reset(sR, 1);
-    outGainSmooth.reset(sR, 0.3);
+    freqSmooth.reset(sR, 0.05);
+    outGainSmooth.reset(sR, 0.1);
     
     filterCoeff[0] = IIRCoefficients::makeHighPass(sampleRate, 180);
     filterCoeff[1] = IIRCoefficients::makeHighPass(sampleRate, 180);
@@ -124,7 +124,12 @@ void VarDelay::prepareToPlay (int samplesPerBlockExpected, double sampleRate)
 
 void VarDelay::releaseResources()
 {
-    
+	for (int i = 0; i < 2; i++)
+	{
+		sampleBuffer[i].clear();
+		modOsc[i][0].reset();
+		modOsc[i][1].reset();
+	}
 }
 
 void VarDelay::getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill)
@@ -300,7 +305,7 @@ void VarDelay::getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFi
                             // Readpos         ch  window
             delSig[0] = read(bufferReadPos[0], ch, 0);
             delSig[1] = read(bufferReadPos[1], ch, 1);
-            
+
             // The outgoing signal is combination of the output of the 2 windowed buffers, mulitplied by the sine wave used in the threshold test
             float reconstructedSignal = (delSig[0] * windowVal[ch]) + (delSig[1] * invWindowVal[ch]);
             
@@ -308,6 +313,7 @@ void VarDelay::getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFi
              write(bufferWritePos[ch], *inP + (reconstructedSignal * feedbackLocal), ch, 0);
              write(bufferWritePos[ch], *inP + (reconstructedSignal * feedbackLocal), ch, 1);
             
+			 // This line has been changed to allow accumulation to the buffer rather than overwriting for use in polyphonic synth
             *outP += ( (reconstructedSignal * mix.get()) + (*inP * (1.0f - mix.get() ) ) ) * outGainSmooth.getNextValue();
             
             inP++;
@@ -338,13 +344,163 @@ void VarDelay::getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFi
     }
 }
 
+//---//---////---//---////---//---////---//---////---//---////---//---////---//---////---//---////---//---////---//---////---//---//
+
+void VarDelay::getNextAudioBlockCustom(const juce::AudioSourceChannelInfo& bufferToFill, const juce::AudioSourceChannelInfo& inputBuffer)
+{
+	int numSamples = bufferToFill.numSamples;
+	float totalNumInputChannels = bufferToFill.buffer->getNumChannels();
+
+	//----------------------------------------------------------------------------------------------------
+	juce::AudioBuffer<float> inputSampleBuffer[2];
+
+	// Refer the buffer to the scratch buffers, which should be the correct size.
+	for (int i = 0; i < 2; i++)
+	{
+		inputSampleBuffer[i] = juce::AudioBuffer<float>(scratchBuffer[i].getArrayOfWritePointers(), totalNumInputChannels, numSamples);
+	}
+
+	// Copy the data from the data from the incoming buffer in our buffer.
+	for (int ch = 0; ch < totalNumInputChannels; ch++)
+	{
+		inputSampleBuffer[ch].copyFrom(ch, 0, *inputBuffer.buffer, 0, 0, numSamples);
+	}
+
+	//----------------------------------------------------------------------------------------------------
+
+	for (int ch = 0; ch < bufferToFill.buffer->getNumChannels(); ch++)
+	{
+		float bufferReadPos[2];
+		float delSig[2];
+		float modValMultiplier;
+		//float modOffset = 0;
+
+		float windowVal[2];
+		float invWindowVal[2];
+		float numSamples = bufferToFill.numSamples;
+		float* outP = bufferToFill.buffer->getWritePointer(ch);
+		float* inP = inputSampleBuffer[ch].getWritePointer(ch);
+
+		float modDepthLocal = modDepth.get();
+		float modSpeedLocal = modSpeed.get();
+		modOsc[ch]->setAmplitude(modDepthLocal);
+		modOsc[ch]->setFrequency(modSpeedLocal);
+
+		float index = (float)ID;
+
+		double fD = (freqDist.get() * index) + 1.0;
+
+		double roundValLocal = (1.0f - freqRoundVal.get()) * 12.0f;
+		int roundValLocalInt = (int)roundValLocal + 1;
+
+		roundValLocal = 1.0;
+
+		double harmonicityLocal = harmonicityVal.get();
+
+		double harm = floor(fD * roundValLocal) / roundValLocal;
+		double noHarm = (fD * roundValLocal) / roundValLocal;
+
+		double fDRound = (harm * harmonicityLocal) + (noHarm * (1.0f - harmonicityLocal));
+
+		while (numSamples--)
+		{
+			double feedbackLocal = feedback.get() * emphasisSmooth.getNextValue();
+			bufferWritePos[ch]++;
+
+			if (bufferWritePos[ch] > bufferSize[ch])
+				bufferWritePos[ch] = 0;
+
+			// Get the next value from the windowing oscillator and an inverted version.
+			windowVal[ch] = (winOsc[ch].nextSample() * 0.5) + 0.5;
+			invWindowVal[ch] = 1.0f - windowVal[ch];
+
+			(modSpeedLocal != 0) ? modValMultiplier = modOsc[ch]->nextSample() : modValMultiplier = 0;
+			modValMultiplier = ((modValMultiplier * 0.5) + 1.0f);
+
+			double localFreq = freq.get() * modValMultiplier;
+			double distributedFreq = localFreq * fDRound;
+
+			double delTimeInSec = 1.0 / distributedFreq;
+
+			if (delTimeInSec > maxDelayTime)
+			{
+				delTimeInSec = maxDelayTime;
+			}
+
+			//((delTimeInSec - modDepthLocal) < 0) ? modOffset = (modDepthLocal - delTimeInSec): modOffset = 0;
+
+			readableDelayTime = delTimeInSec;
+
+			float delTimeInSamples = (delTimeInSec * sR);
+
+			// The threshold class returns true when the signal passes the given threshold. This allows the delay time to be changed for that buffer.
+			if (threshold[ch][0].testThreshold(windowVal[ch]))
+			{
+				delWindowValues[ch][0].setValue(delTimeInSamples);
+			}
+			if (threshold[ch][1].testThreshold(invWindowVal[ch]))
+			{
+				delWindowValues[ch][1].setValue(delTimeInSamples);
+			}
+
+			float buf1Delay = delWindowValues[ch][0].getNextValue();
+			float buf2Delay = delWindowValues[ch][1].getNextValue();
+
+			bufferReadPos[0] = bufferWritePos[ch] - buf1Delay;
+			bufferReadPos[1] = bufferWritePos[ch] - buf2Delay;
+
+			for (int i = 0; i < 2; i++)
+			{
+				if (bufferReadPos[i] < 0)
+				{
+					bufferReadPos[i] += sampleBuffer[i].getNumSamples() - 1;
+				}
+				bufferReadPosRef[i][0] = bufferReadPos[0];
+				bufferReadPosRef[i][1] = bufferReadPos[1];
+			}
+			// Readpos         ch  window
+			delSig[0] = read(bufferReadPos[0], ch, 0);
+			delSig[1] = read(bufferReadPos[1], ch, 1);
+
+			// The outgoing signal is combination of the output of the 2 windowed buffers, mulitplied by the sine wave used in the threshold test
+			float reconstructedSignal = (delSig[0] * windowVal[ch]) + (delSig[1] * invWindowVal[ch]);
+
+			float ksjdfgh;
+			
+			// What should be written into the buffer for a single voice?
+			// It should be the contents of the input buffer (the excitation envelope)
+			// Plus the delayed signal from its own delayBuffer
+
+			//         writePos     |                  input                      | ch | win
+			write(bufferWritePos[ch], *inP + (reconstructedSignal * feedbackLocal), ch, 0);
+			write(bufferWritePos[ch], *inP + (reconstructedSignal * feedbackLocal), ch, 1);
+
+			// What should be written into the output buffer?
+			// The input plus the output from the delay buffer
+
+			// This line has been changed to allow accumulation to the buffer rather than overwriting for use in polyphonic synth
+			*outP += ((reconstructedSignal * mix.get()) + (*inP * (1.0f - mix.get()))) * outGainSmooth.getNextValue();
+
+			//*outP += reconstructedSignal * outGainSmooth.getNextValue();
+
+			inP++;
+			outP++;
+		}
+	}
+	filter[0].processSamples(bufferToFill.buffer->getWritePointer(0), bufferToFill.numSamples);
+	if (bufferToFill.buffer->getNumChannels() > 1)
+	{
+		filter[1].processSamples(bufferToFill.buffer->getWritePointer(1), bufferToFill.numSamples);
+	}
+}
+
 void VarDelay::write(int writePos, float input, int ch, int win)
 {
     if(writePos < 0)
         writePos = 0;
     else if (writePos > bufferSize[ch]-1)
         writePos = bufferSize[ch]-1;
-    
+ 
     float* sampleP = sampleBuffer[ch].getWritePointer(win, writePos);
     *sampleP = input;
 }
@@ -378,6 +534,14 @@ void VarDelay::setParameter (int paramType, float newValue)
     switch (paramType)
     {
         case freqP:
+			if (newValue <= 0) 
+			{ 
+				newValue = 0.01; 
+			}
+			else if ((1.0f / newValue) > maxDelayTime)
+			{
+				newValue = maxDelayTime * 0.99;
+			}
             freq = newValue;
             freqSmooth.setValue(freq.get());
             break;
@@ -573,6 +737,17 @@ void VarDelay::setReverseState (float state)
 {
     loops.setReverseState(state);
 }
+
+
+void VarDelay::reset()
+{
+	for (int ch = 0; ch < 2; ch++)
+	{
+		sampleBuffer[ch].clear();
+		//modOsc[ch]->reset();
+	}
+}
+
 
 void VarDelay::valueTreePropertyChanged (ValueTree& treeWhosePropertyHasChanged, const Identifier& property) {}
 

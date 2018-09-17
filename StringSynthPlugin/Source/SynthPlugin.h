@@ -32,7 +32,9 @@ public:
 	Synth();
 	~Synth();
 
-	//void noteOn(int midiChannel, int midiNoteNumber, float velocity) override;
+	void noteOn(int midiChannel, int midiNoteNumber, float velocity) override;
+
+	void renderVoices(AudioBuffer<float>& buffer, int startSample, int numSamples) override;
 
 	//void noteOff(int midiChannel, int midiNoteNumber, float velocity, bool allowTailOff) override;
 
@@ -50,6 +52,8 @@ public:
 
 	//void handleProgramChange(int midiChannel, int programNumber) override;
 
+	void startNoteAtFreq(float frequency);
+
 	void rememberNote(int note);
 
 	int getLastNote();
@@ -61,6 +65,12 @@ public:
 	int getNumActiveNotes();
 
 	void updateVoiceFreq(int index, float newFreq);
+
+	void updateVoiceFdbk(int index, float newFdbk);
+
+	bool noteOnForVoice(int index, float frequency);
+
+	void audioOff();
 
 private:
 	StringSynthSound synthSound;
@@ -85,10 +95,14 @@ public:
 
 	void setSynthesiser(Synth* synth) { parentSynth = synth; }
 	Synth* getSynthesiser() { return parentSynth; }
-	
+
 	bool canPlaySound(SynthesiserSound* ss) override;
 
 	void startNote(int midiNoteNumber, float velocity, SynthesiserSound* sound, int currentPitchWheelPosition) override;
+
+	void startNoteAtFreq(float frequency, float velocity);
+
+	void startNoteWhenFinished(float frequency, float velocity, SynthesiserSound* sound);
 
 	void stopNote(float velocity, bool allowTailOff) override;
 
@@ -116,27 +130,55 @@ public:
 
 	float getCutoff() { return cutoff; }
 
-	void updateFreq( float newFreq );
+	void updateFreq(float newFreq);
+
+	void updateFdbk(float newFdbk);
 
 	void prepare(int samplesPerBlockExpected, double sampleRate);
+
+	void release();
 private:
+	int counters[2] = { 0, 0 };
 	int ID;
 	int note = 0;
 	stk::ADSR envelope[2];
-	Random randy;
+	float envelopeADinMS;
 	float tailOff;
 	int state;
 	Synth* parentSynth;
-
+	int counter[2] = { 0 , 0 };
+	int sR;
+	stk::ADSR excitation[2];
+	AudioBuffer<float> scratchInputBuffers;
+	AudioBuffer<float> scratchOutputBuffers;
 	ScopedPointer<VarDelay> vardle;
 
+	LinearSmoothedValue<float> outGain[2];
+
+	stk::Noise noise;
+
+	Random randy;
+	float excitationNoiseGain = 0;
+
+	float nextFreq = 0;
+	float nextVelocity = 0;
+
 	float cutoff;
-	//IIRCoefficients coeff[2];
 	IIRFilter bpf[2];
-	
-	float phaseInc = 0;
-	float phasePos[2] = { 0, 0 };
-	float twoPi = M_PI * 2.0f;
+
+	float prevSample[2] = { 0, 0 };
+	float sampleDelta[2] = {0, 0};
+
+	float prevTime[2] = { 0, 0 };
+	float currentTime[2] = { 0, 0 };
+	float deltaTime[2] = { 0, 0 };
+	float elapsedTime[2] = { 0, 0 };
+
+	int numBlockProcessed = 0;
+	bool hasPassedEnv = false;
+
+	SinOsc sinOsc[2];
+	bool checkForNonZero;
 };
 
 //---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++---+++//
@@ -162,6 +204,12 @@ public:
 
 		}*/
 		return state_;
+	}
+
+	void reset()
+	{
+		value_ = 0;
+		target_ = 0;
 	}
 
 private:

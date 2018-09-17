@@ -171,6 +171,9 @@ public:
     void releaseResources() override;
     /** Called repeatedly to fetch subsequent blocks of audio data.*/
     void getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill) override;
+
+	/** Called repeatedly to fetch subsequent blocks of audio data.*/
+	void getNextAudioBlockCustom(const juce::AudioSourceChannelInfo& bufferToFill, const juce::AudioSourceChannelInfo& inputBuffer);
     
     /** Write to a delay line specified by the win and channel arguments. There must be two buffers for every channel
      @param writePos    - an integer that defines the position in the buffer that will be written to.
@@ -239,6 +242,8 @@ public:
     void setFreezeState (float state);
     
     void setReverseState (float state);
+
+	void reset();
         
     void valueTreePropertyChanged (ValueTree& treeWhosePropertyHasChanged, const Identifier& property) override;
     void valueTreeChildAdded (ValueTree& parentTree, ValueTree& childWhichHasBeenAdded) override {}

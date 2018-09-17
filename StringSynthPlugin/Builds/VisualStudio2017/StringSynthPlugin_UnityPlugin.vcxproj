@@ -159,8 +159,8 @@ copy /Y &quot;$(OutDir)audioplugin_StringSynthPlugin_UnityScript.cs&quot; &quot;
     </Lib>
     <PostBuildEvent>
       <Command>copy /Y &quot;..\..\JuceLibraryCode\audioplugin_StringSynthPlugin_UnityScript.cs&quot; &quot;$(OutDir)&quot;
-copy /Y &quot;$(OutDir)$(TargetFileName)&quot; &quot;C:\Users\Alex\Documents\iSci\nsb\nsb-bismuth-research-vr\Assets\Plugins\Audio\$(TargetFileName)&quot;
-copy /Y &quot;$(OutDir)audioplugin_StringSynthPlugin_UnityScript.cs&quot; &quot;C:\Users\Alex\Documents\iSci\nsb\nsb-bismuth-research-vr\Assets\Plugins\Audio\audioplugin_StringSynthPlugin_UnityScript.cs&quot;</Command>
+copy /Y &quot;$(OutDir)$(TargetFileName)&quot; &quot;C:\Users\Alex\Documents\iSci\nsb\nsb-bismuth-research-vr\Assets\Plugins\Audio\x86_64\$(TargetFileName)&quot;
+copy /Y &quot;$(OutDir)audioplugin_StringSynthPlugin_UnityScript.cs&quot; &quot;C:\Users\Alex\Documents\iSci\nsb\nsb-bismuth-research-vr\Assets\Plugins\Audio\x86_64\audioplugin_StringSynthPlugin_UnityScript.cs&quot;</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

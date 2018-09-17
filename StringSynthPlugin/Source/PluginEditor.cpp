@@ -19,6 +19,7 @@ StringSynthPluginAudioProcessorEditor::StringSynthPluginAudioProcessorEditor (St
     // editor's size to whatever you need it to be.
     setSize (400, 300);
 
+
 	addAndMakeVisible(noteOnButton);
 	noteOnButton.addListener(this);
 	noteOnButton.setButtonText("Add Note");
@@ -60,14 +61,6 @@ void StringSynthPluginAudioProcessorEditor::resized()
 
 void StringSynthPluginAudioProcessorEditor::buttonClicked(Button* b)
 {
-	if (b == &noteOnButton)
-	{
-		processor.triggerNoteOn();
-	}
-	else if (b == &noteOffButton)
-	{
-		processor.triggerNoteOff();
-	}
 }
 
 void StringSynthPluginAudioProcessorEditor::sliderValueChanged(Slider* slider)
